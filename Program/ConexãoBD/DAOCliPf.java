@@ -1,0 +1,112 @@
+package Program.ConexãoBD;
+
+import Program.Classes.ClientePF;
+import java.sql.*;
+import java.util.*;
+
+public class DAOCliPf {
+    private Connection conexao;
+
+    public DAOCliPf() {
+        conexao = (Connection) new FabricaDeConexoes().solicitaConexao("127.0.0.1", "java", "root", "minha123");
+    }
+
+    public void insert(ClientePF c) {
+        String sql = "INSERT INTO clipf" +
+                "(nome, cpf, contato, pedido)" +
+                " VALUES(?,?,?,?)";
+        try {
+            PreparedStatement stmt = conexao.prepareStatement(sql);
+            stmt.setString(1, c.getNome());
+            stmt.setString(2, c.getCPF());
+            stmt.setString(3, c.getContato());
+            stmt.setString(4, c.getPedido());
+            stmt.execute();
+            stmt.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public ClientePF busca(String n) {
+        ClientePF p = new ClientePF();
+        try {
+            String sql = "select * from clipf where nome like ?";
+            PreparedStatement stmt = conexao.prepareStatement(sql);
+            stmt.setString(1, "%" + n + "%");
+            ResultSet rs = stmt.executeQuery();
+
+            p.setNome("Não Encontrado!");
+
+            while (rs.next()) {
+                if (rs.getString("nome").equals(n)) {
+                    p.setNome(rs.getString("nome"));
+                    p.setContato(rs.getString("contato"));
+                    p.setCPF(rs.getString("CPF"));
+                    p.setPedido(rs.getString("Pedido"));
+                }
+            }
+            rs.close();
+            stmt.close();
+            return p;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public List<ClientePF> lista() {
+        try {
+            List<ClientePF> clipf = new ArrayList<ClientePF>();
+            PreparedStatement stmt = conexao.prepareStatement("select * from clipf");
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                ClientePF c = new ClientePF();
+                c.setNome(rs.getString("nome"));
+                c.setContato(rs.getString("contato"));
+                c.setCPF(rs.getString("CPF"));
+                c.setPedido(rs.getString("Pedido"));
+
+                clipf.add(c);
+            }
+            rs.close();
+            stmt.close();
+            return clipf;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void excluir(ClientePF pf) {
+        String sql = "DELETE FROM clipf WHERE cpf = ?";
+        try {
+            PreparedStatement stmt = conexao.prepareStatement(sql);
+            stmt.setString(1, pf.getCPF());
+            stmt.executeUpdate();
+            stmt.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void altera(ClientePF c, String n) {
+        String sql = "update clipf set" +
+                " nome=?, cpf=?, contato=?, pedido=?" +
+                " where cpf=?";
+        try {
+            PreparedStatement stmt = conexao.prepareStatement(sql);
+            stmt.setString(1, c.getNome());
+            stmt.setString(2, c.getCPF());
+            stmt.setString(3, c.getContato());
+            stmt.setString(4, c.getPedido());
+            stmt.setString(5, n);
+
+            stmt.execute();
+            stmt.close();
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+}

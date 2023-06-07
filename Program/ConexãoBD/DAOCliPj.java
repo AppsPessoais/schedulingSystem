@@ -1,0 +1,123 @@
+package Program.ConexãoBD;
+
+import java.sql.*;
+import java.util.*;
+import Program.Classes.ClientePJ;
+
+public class DAOCliPj {
+    private Connection conexao;
+
+    public DAOCliPj() {
+        conexao = (Connection) new FabricaDeConexoes().solicitaConexao("127.0.0.1", "java", "root", "minha123");
+    }
+
+    public void insert(ClientePJ pj) {
+
+        String sql = "INSERT INTO clipj " +
+                "(razao, cnpj, email, contato, responsavel, endereco) " +
+                "VALUES (?,?,?,?,?,?)";
+        try {
+            PreparedStatement stmt = conexao.prepareStatement(sql);
+            stmt.setString(1, pj.getRazao());
+            stmt.setString(2, pj.getCnpj());
+            stmt.setString(3, pj.getEmail());
+            stmt.setString(4, pj.getContato());
+            stmt.setString(5, pj.getResponsavel());
+            stmt.setString(6, pj.getEndereco());
+
+            stmt.execute();
+            stmt.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public ClientePJ busca(String n) {
+        ClientePJ p = new ClientePJ();
+        try {
+            String sql = "select * from clipj where nome like ?";
+            PreparedStatement stmt = conexao.prepareStatement(sql);
+            stmt.setString(1, "%" + n + "%");
+
+            ResultSet rs = stmt.executeQuery();
+            p.setRazao("Não Encontrado!");
+
+            while (rs.next()) {
+                if (rs.getString("nome").equals(n)) {
+                    p.setRazao(rs.getString("Razao"));
+                    p.setCnpj(rs.getString("Cnpj"));
+                    p.setEmail(rs.getString("Email"));
+                    p.setContato(rs.getString("Contato"));
+                    p.setResponsavel(rs.getString("Responsavel"));
+                    p.setEndereco(rs.getString("Endereco"));
+                }
+            }
+            rs.close();
+            stmt.close();
+            return p;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public List<ClientePJ> lista() {
+        try {
+            List<ClientePJ> clientes = new ArrayList<ClientePJ>();
+            PreparedStatement stmt = conexao.prepareStatement("select * from clipj");
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                ClientePJ c = new ClientePJ();
+                c.setRazao(rs.getString("razao"));
+                c.setCnpj(rs.getString("cnpj"));
+                c.setEmail(rs.getString("email"));
+                c.setContato(rs.getString("contato"));
+                c.setResponsavel(rs.getString("responsavel"));
+                c.setEndereco(rs.getString("endereco"));
+                clientes.add(c);
+            }
+            rs.close();
+            stmt.close();
+            return clientes;
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    public void altera(ClientePJ c, String n) {
+        String sql = "update clipj set" +
+                " razao=?, cnpj=?, email=?, contato=?, responsavel=?, endereco=?" +
+                " where cnpj=?";
+
+        try {
+            PreparedStatement stmt = conexao.prepareStatement(sql);
+            stmt.setString(1, c.getRazao());
+            stmt.setString(2, c.getCnpj());
+            stmt.setString(3, c.getEmail());
+            stmt.setString(4, c.getContato());
+            stmt.setString(5, c.getResponsavel());
+            stmt.setString(6, c.getEndereco());
+            stmt.setString(7, n);
+
+            stmt.execute();
+            stmt.close();
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void excluir(ClientePJ pj) {
+        String sql = "DELETE FROM clipj WHERE cnpj = ?";
+        try {
+            PreparedStatement stmt = conexao.prepareStatement(sql);
+            stmt.setString(1, pj.getCnpj());
+            stmt.executeUpdate();
+            stmt.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+}

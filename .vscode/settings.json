@@ -1,0 +1,9 @@
+{
+      "java.project.referencedLibraries": {
+          "include": [
+              "lib/**/*.jar",
+              "Program/Telas/mysql-connector-java-5.1.35-bin.jar",
+              "Program/Telas/mysql-connector-j-8.0.33.jar"
+          ],
+      }
+  }
